@@ -1,6 +1,16 @@
+在 Mesh 中支持预热
+
+### 现状
+
+由于 Istio 和 Envoy 最初并不支持预热，在接入 Mesh 时，我们为了实现类似预热的效果，对需要预热的应用设置使用最小连接数的负载均衡器，这种方式一般来说效果还可以，而且尽量少的设置配置项，让运行过程中负载均衡器根据连接数情况自适应的分发流量。但是最近遇到的场景来看，有些情况下这种方式仍然会带来一些客户端报错以及达不到预热效果的情况，比如客户端设置了较短的超时时间，超时后连接断开，那么因为负载均衡的算法是最小连接数，又会有新的请求被分发到刚启动的实例。
+
+为了缓解这种情况，我们对 ServiceEntry 的 endpoint 设置权重，来调整刚启动后处于预热期间的实例的权重。
+
+这种方式可行，但是一方面 soa operator 需要额外的逻辑来处理，另一方面因为实例权重有变更，istio 需要额外做一些推送。
+
 ### Envoy 慢启动模式
 
-[慢启动模式](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/slow_start#arch-overview-load-balancing-slow-start)是一种影响 upstream endpoints **负载均衡权重**的机制，可以针对每个upstream cluster 进行配置。目前 Envoy 的慢启动模式仅支持 [Round Robin](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#envoy-v3-api-field-config-cluster-v3-cluster-roundrobinlbconfig-slow-start-config) 和 [Least Request](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#envoy-v3-api-field-config-cluster-v3-cluster-leastrequestlbconfig-slow-start-config) 这两种负载均衡器。
+Envoy 的较新版本开始支持[慢启动模式](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/slow_start#arch-overview-load-balancing-slow-start)。这一种影响 upstream endpoints **负载均衡权重**的机制，可以针对每个upstream cluster 进行配置。目前 Envoy 的慢启动模式仅支持 [Round Robin](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#envoy-v3-api-field-config-cluster-v3-cluster-roundrobinlbconfig-slow-start-config) 和 [Least Request](https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#envoy-v3-api-field-config-cluster-v3-cluster-leastrequestlbconfig-slow-start-config) 这两种负载均衡器。
 
 Envoy 慢启动相关的配置项如下
 
@@ -117,3 +127,5 @@ done
 ### 总结
 
 Envoy 虽然对预热提供了支持，且可以配置主动健康检测一起工作，但是 Istio 对预热的支持仍然不够完善，一方面不支持配置主动健康检测，另一方面对预热的配置只支持配置预热时长。不过即使只支持配置预热时长，后续升级 Istio 后也可以用起来，起码可以降低 soa operator 的复杂度（目前改的版本是预热期间每分钟修改实例权重），且减少控制面推送的压力。
+
+另外需要注意的一点是，预热生效时间是 endpoint 加入 cluster 的时间开始算起，而按照我们目前的实现逻辑，拉出实例时会将 endpoint 从 ServiceEntry 中删除，这样的话后续拉入实例又会开始预热。
