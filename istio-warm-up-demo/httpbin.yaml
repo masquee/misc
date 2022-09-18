@@ -1,0 +1,60 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: 12345.httpbin
+spec:
+  hosts:
+    - 12345.httpbin.soa.mesh
+  gateways:
+    - mesh
+  http:
+    - match:
+        - uri:
+            prefix: /
+      retries:
+        attempts: 0
+      route:
+        - destination:
+            host: 12345.httpbin.soa.mesh
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: 12345.httpbin
+spec:
+  host: 12345.httpbin.soa.mesh
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+      warmupDurationSecs: 300s # TODO tune
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 500ms
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: 12345.httpbin
+spec:
+  hosts:
+    - 12345.httpbin.soa.mesh
+  location: MESH_INTERNAL
+  resolution: STATIC
+  ports:
+    - number: 80
+      name: http
+      protocol: HTTP
+  endpoints:
+    - address: 172.17.0.6
+      ports:
+        http: 80
+    - address: 172.17.0.8
+      ports:
+        http: 80
+    - address: 172.17.0.10
+      ports:
+        http: 80
+    - address: 172.17.0.13
+      ports:
+        http: 80
