@@ -85,13 +85,13 @@ spec:
 
 下面通过实际测试，来看一下 endpoint 加入 cluster 之后接收到的流量变化情况。
 
-创建 httpbin 的4 个实例，初始时在 ServiceEntry 中配置 其中 3 个实例，并用 qps 为 200 发起请求
+创建 httpbin 的 4 个实例，初始时在 ServiceEntry 中配置 其中 3 个实例，并用 qps 为 200 发起请求
 
 ```bash
 ./fortio load -qps 200 -c 2 -t 10m -allow-initial-errors -H "Host:12345.httpbin.soa.mesh" http://1.1.1.1/get
 ```
 
-然后修改 ServiceEntry，再增加一个实例，然后再客户端来看发给该实例的请求数变化情况
+然后修改 ServiceEntry，再增加一个实例，然后再从客户端来看发给该实例的请求数变化情况
 
 ```bash
 for i in $(seq 1 400)
@@ -112,7 +112,7 @@ done
 
 ![requests per second](/Users/zhongyuan/github/masquee/misc/istio-warm-up-demo/requests per second.png)
 
-可以看出在预热期间，每秒的请求数基本上是线性增加的（也就是 envoy 默认的 aggression 为 1.0 的效果），直到达到配置的预热时长后，每秒接收的请求数保持稳定在 50 个请求左右（qps 200，新实例加入后一共有 4 个实例，基本上每个实例接收到的 qps 就是 50 ） 。
+可以看出在预热期间，每秒的请求数基本上是线性增加的（也就是 Envoy 默认的 aggression 为 1.0 的效果），直到达到配置的预热时长后，每秒接收的请求数保持稳定在 50 个请求左右（qps 200，新实例加入后一共有 4 个实例，基本上每个实例接收到的 qps 就是 50 ） 。
 
 ### 总结
 
