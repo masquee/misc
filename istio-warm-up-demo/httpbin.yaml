@@ -46,15 +46,15 @@ spec:
       name: http
       protocol: HTTP
   endpoints:
-    - address: 172.17.0.6
+    - address: 172.17.0.2
+      ports:
+        http: 80
+    - address: 172.17.0.3
+      ports:
+        http: 80
+    - address: 172.17.0.7
       ports:
         http: 80
     - address: 172.17.0.8
-      ports:
-        http: 80
-    - address: 172.17.0.10
-      ports:
-        http: 80
-    - address: 172.17.0.13
       ports:
         http: 80
