@@ -32,6 +32,16 @@ static_resources:
                           route:
                             cluster: backend
                 http_filters:
+                  - name: envoy.filters.http.header_to_metadata
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+                      request_rules:
+                        - header: x-client-subenv
+                          on_header_present:
+                            metadata_namespace: envoy.lb
+                            key: subenv
+                            type: STRING
+                          remove: false
                   - name: envoy.filters.http.router
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
