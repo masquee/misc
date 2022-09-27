@@ -1,0 +1,52 @@
+version: "3.8"
+services:
+
+  flask_service:
+    build:
+      context: ./shared/flask
+    image: flask_service:python-3.10-slim-bullseye
+    restart: "no"
+    deploy:
+      replicas: 0
+
+  client-envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile-client
+    depends_on:
+      - "backend-in-fat1"
+      - "backend-in-fat2"
+      - "backend-in-fat3"
+      - "backend-in-fws"
+
+  backend-in-fat1:
+    build:
+      context: ./shared/service
+    volumes:
+      - ./service.py:/code/service.py
+    environment:
+      - HOST=backend-in-fat1
+
+  backend-in-fat2:
+    build:
+      context: ./shared/service
+    volumes:
+      - ./service.py:/code/service.py
+    environment:
+      - HOST=backend-in-fat2
+
+  backend-in-fat3:
+    build:
+      context: ./shared/service
+    volumes:
+      - ./service.py:/code/service.py
+    environment:
+      - HOST=backend-in-fat3
+
+  backend-in-fws:
+    build:
+      context: ./shared/service
+    volumes:
+      - ./service.py:/code/service.py
+    environment:
+      - HOST=backend-in-fws
