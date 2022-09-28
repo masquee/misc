@@ -49,6 +49,7 @@ static_resources:
     - name: backend
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
+      connect_timeout: 3s
       lb_subset_config:
         fallback_policy: DEFAULT_SUBSET
         default_subset:
@@ -59,10 +60,7 @@ static_resources:
       load_assignment:
         cluster_name: backend
         endpoints:
-          - locality:
-              region: fat1
-              zone: sha
-            load_balancing_weight: 1
+          - load_balancing_weight: 1
             priority: 0 # highest
             lb_endpoints:
               - endpoint:
@@ -70,15 +68,11 @@ static_resources:
                     socket_address:
                       address: backend-in-fat1
                       port_value: 8000
-                  hostname: backend-in-fat1
                 metadata:
                   filter_metadata:
                     envoy.lb:
                       subenv: fat1
-          - locality:
-              region: fat2
-              zone: sha
-            load_balancing_weight: 1
+          - load_balancing_weight: 1
             priority: 0 # highest
             lb_endpoints:
               - endpoint:
@@ -88,15 +82,11 @@ static_resources:
                       port_value: 8000
                   health_check_config:
                     port_value: 8000
-                  hostname: backend-in-fat2
                 metadata:
                   filter_metadata:
                     envoy.lb:
                       subenv: fat2
-          - locality:
-              region: fat3
-              zone: sha
-            load_balancing_weight: 1
+          - load_balancing_weight: 1
             priority: 0 # highest
             lb_endpoints:
               - endpoint:
@@ -106,15 +96,11 @@ static_resources:
                       port_value: 8000
                   health_check_config:
                     port_value: 8000
-                  hostname: backend-in-fat3
                 metadata:
                   filter_metadata:
                     envoy.lb:
                       subenv: fat3
-          - locality:
-              region: fws
-              zone: sha
-            load_balancing_weight: 1
+          - load_balancing_weight: 1
             priority: 0 # highest
             lb_endpoints:
               - endpoint:
@@ -124,7 +110,6 @@ static_resources:
                       port_value: 8000
                   health_check_config:
                     port_value: 8000
-                  hostname: backend-in-fws
                 metadata:
                   filter_metadata:
                     envoy.lb:
