@@ -1,4 +1,5 @@
-FROM envoyproxy/envoy-dev:latest
+FROM envoyproxy/envoy:v1.18.4
+# FROM envoyproxy/envoy-dev:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
